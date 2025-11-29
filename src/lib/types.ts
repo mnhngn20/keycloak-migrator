@@ -1,4 +1,5 @@
 import type KeycloakAdminClient from '@keycloak/keycloak-admin-client';
+import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
 
 export interface KeycloakMigration {
   id: string;
@@ -6,11 +7,7 @@ export interface KeycloakMigration {
   run: (kc: KeycloakAdminClient, realmName: string) => Promise<void>;
 }
 
-export interface BootstrapClientConfig {
-  clientId: string;
-  name?: string;
-  [key: string]: unknown;
-}
+export type BootstrapClientConfig = ClientRepresentation & { clientId: string };
 
 export interface RawKeycloakMigratorConfig {
   migrationDir: string;
@@ -42,3 +39,5 @@ export interface ResolvedKeycloakMigratorConfig {
     client?: BootstrapClientConfig;
   };
 }
+
+export type KeycloakMigratorConfig = RawKeycloakMigratorConfig;

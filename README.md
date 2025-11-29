@@ -22,65 +22,65 @@ Expose the CLI through your package scripts (this makes `yarn keycloak-migrator 
 
 ## Quick start
 
-1. Copy `keycloak-migrator.config.json` to your project root and edit it.
+1. Copy `keycloak-migrator.config.js` to your project root and edit it (TypeScript and JSON are supported too, but JS makes it easy to reference `process.env`).
 2. Run `yarn keycloak-migrator create addClients` to scaffold a migration.
 3. Open the generated file in `migrationDir`, add your Keycloak Admin Client calls, and export the `KeycloakMigration`.
 4. Execute `yarn keycloak-migrator migrate` (or `--seed`) to apply the files. Applied IDs are stored on the realm so runs are idempotent.
 
 ## Configuration reference
 
-`keycloak-migrator.config.json` (example):
+`keycloak-migrator.config.js` (example):
 
-```json
-{
-  "migrationDir": "./keycloak/migrations",
-  "seedDir": "./keycloak/seeds",
-  "keycloak": {
-    "baseUrl": "$env.KEYCLOAK_BASE_URL",
-    "realm": "example-realm",
-    "adminUsername": "$env.KEYCLOAK_ADMIN_USER",
-    "adminPassword": "$env.KEYCLOAK_ADMIN_PASSWORD"
+```js
+/** @type {import("keycloak-migrator").KeycloakMigratorConfig} */
+const config = {
+  migrationDir: "./keycloak/migrations",
+  seedDir: "./keycloak/seeds",
+  keycloak: {
+    baseUrl: process.env.KEYCLOAK_BASE_URL ?? "http://localhost:8080",
+    realm: process.env.KEYCLOAK_REALM ?? "example-realm",
+    adminUsername: process.env.KEYCLOAK_ADMIN_USER ?? "admin",
+    adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin",
   },
-  "bootstrap": {
-    "createRealm": true,
-    "client": {
-      "clientId": "example-api",
-      "name": "Example API",
-      "publicClient": false,
-      "redirectUris": ["*"],
-      "webOrigins": ["+"],
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
-      "rootUrl": "https://example.com",
-      "baseUrl": "/callback"
-    }
-  }
-}
+  bootstrap: {
+    createRealm: true,
+    client: {
+      clientId: "example-api",
+      name: "Example API",
+      publicClient: false,
+      redirectUris: ["*"],
+      webOrigins: ["+"],
+      directAccessGrantsEnabled: true,
+      serviceAccountsEnabled: true,
+      rootUrl: "https://example.com",
+      baseUrl: "/callback",
+    },
+  },
+};
+
+module.exports = config;
+```
+
+Prefer TypeScript? Use `keycloak-migrator.config.ts` with the exported type:
+
+```ts
+import type { KeycloakMigratorConfig } from "keycloak-migrator";
+
+const config: KeycloakMigratorConfig = {
+  migrationDir: "./keycloak/migrations",
+  // ...
+};
+
+export default config;
 ```
 
 - `migrationDir`: path to your migration files. Point it at `src/...` if you author in TypeScript or `dist/...` if you only want compiled JavaScript to run. Paths are resolved relative to the config file.
 - `seedDir`: optional directory for seed files. Defaults to `<migrationDir>/seeds`.
 - `keycloak`: host + credentials for the admin user. These values are passed to `@keycloak/keycloak-admin-client`.
 - `bootstrap.createRealm`: when true, the realm is created automatically if it does not exist.
-- `bootstrap.client`: optional. When provided, we will create the client (if missing) using the exact JSON you supply. Every property (beyond `clientId`) is forwarded to `kc.clients.create`, so you can configure advanced Keycloak features without waiting for this package to expose new flags.
+- `bootstrap.client`: optional. When provided, we will create the client (if missing) using the exact JSON you supply. The type matches the payload of `kc.clients.create` (Keycloak `ClientRepresentation`), so any field that API accepts (redirect URIs, flows, service accounts, etc.) is supported.
 
-You may keep several config files and pass a different one with `--config path/to/config.json`.
-
-### Environment variables in config
-
-Any string written as `$env.MY_VAR` is replaced with `process.env.MY_VAR` while loading the config. This is handy for secrets or host names:
-
-```json
-{
-  "keycloak": {
-    "baseUrl": "$env.KEYCLOAK_BASE_URL",
-    "adminUsername": "$env.KEYCLOAK_ADMIN_USER",
-    "adminPassword": "$env.KEYCLOAK_ADMIN_PASSWORD"
-  }
-}
-```
-
-If the referenced environment variable is missing the CLI exits with an error, so you never run migrations with blank credentials by accident.
+You may keep several config files (JS, TS, or JSON) and pass a different one with `--config path/to/config.js`.
 
 ## CLI commands
 

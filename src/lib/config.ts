@@ -1,35 +1,27 @@
 import { existsSync, readFileSync } from 'fs';
 import * as path from 'path';
+import { pathToFileURL } from 'url';
+import { ensureTsNode } from './ts-node';
 import { RawKeycloakMigratorConfig, ResolvedKeycloakMigratorConfig } from './types';
 
-const DEFAULT_CONFIG_FILE = 'keycloak-migrator.config.json';
+const DEFAULT_CONFIG_FILES = [
+  'keycloak-migrator.config.js',
+  'keycloak-migrator.config.cjs',
+  'keycloak-migrator.config.ts',
+  'keycloak-migrator.config.json',
+];
 
-export function loadConfig(explicitPath?: string): ResolvedKeycloakMigratorConfig {
-  const providedPath = explicitPath || process.env.KEYCLOAK_MIGRATOR_CONFIG || DEFAULT_CONFIG_FILE;
-  const resolvedPath = path.isAbsolute(providedPath)
-    ? providedPath
-    : path.resolve(process.cwd(), providedPath);
+const SUPPORTED_EXTENSIONS = ['.js', '.cjs', '.ts', '.mjs', '.json'];
 
-  if (!existsSync(resolvedPath)) {
-    throw new Error(`Cannot find config file at ${resolvedPath}. Create ${DEFAULT_CONFIG_FILE} in your project root or pass --config <path>.`);
-  }
-
-  const fileContent = readFileSync(resolvedPath, 'utf-8');
-  let rawConfig: RawKeycloakMigratorConfig;
-
-  try {
-    rawConfig = resolveEnvPlaceholders(JSON.parse(fileContent));
-  } catch (err) {
-    throw new Error(`Failed to parse config file ${resolvedPath}: ${(err as Error).message}`);
-  }
+export async function loadConfig(explicitPath?: string): Promise<ResolvedKeycloakMigratorConfig> {
+  const resolvedPath = resolveConfigPath(explicitPath);
+  const rawConfig = await loadRawConfig(resolvedPath);
 
   validateConfig(rawConfig, resolvedPath);
 
   const configDir = path.dirname(resolvedPath);
   const migrationDir = path.resolve(configDir, rawConfig.migrationDir);
-  const seedDir = rawConfig.seedDir
-    ? path.resolve(configDir, rawConfig.seedDir)
-    : path.join(migrationDir, 'seeds');
+  const seedDir = rawConfig.seedDir ? path.resolve(configDir, rawConfig.seedDir) : path.join(migrationDir, 'seeds');
 
   return {
     filePath: resolvedPath,
@@ -79,32 +71,63 @@ function validateConfig(config: RawKeycloakMigratorConfig, filePath: string) {
   }
 }
 
-const ENV_PLACEHOLDER = /^\$env\.([A-Z0-9_]+)$/i;
-
-function resolveEnvPlaceholders<T>(value: T): T {
-  if (Array.isArray(value)) {
-    return value.map((item) => resolveEnvPlaceholders(item)) as T;
-  }
-
-  if (value && typeof value === 'object') {
-    const result: Record<string, unknown> = {};
-    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
-      result[key] = resolveEnvPlaceholders(val);
+function resolveConfigPath(explicitPath?: string): string {
+  const providedPath = explicitPath || process.env.KEYCLOAK_MIGRATOR_CONFIG;
+  if (providedPath) {
+    const normalized = path.isAbsolute(providedPath) ? providedPath : path.resolve(process.cwd(), providedPath);
+    if (existsSync(normalized)) {
+      return normalized;
     }
-    return result as T;
-  }
-
-  if (typeof value === 'string') {
-    const match = value.match(ENV_PLACEHOLDER);
-    if (match) {
-      const envVar = match[1];
-      const envValue = process.env[envVar];
-      if (envValue === undefined) {
-        throw new Error(`Environment variable ${envVar} referenced in config is not defined`);
+    if (!path.extname(normalized)) {
+      for (const ext of SUPPORTED_EXTENSIONS) {
+        const candidate = `${normalized}${ext}`;
+        if (existsSync(candidate)) {
+          return candidate;
+        }
       }
-      return envValue as T;
+    }
+    throw new Error(`Cannot find config file at ${normalized}`);
+  }
+
+  for (const fileName of DEFAULT_CONFIG_FILES) {
+    const candidate = path.resolve(process.cwd(), fileName);
+    if (existsSync(candidate)) {
+      return candidate;
     }
   }
 
-  return value;
+  throw new Error(
+    `Cannot find config file. Create one of the default files (${DEFAULT_CONFIG_FILES.join(
+      ', ',
+    )}) or pass --config <path>.`,
+  );
+}
+
+async function loadRawConfig(configPath: string): Promise<RawKeycloakMigratorConfig> {
+  const ext = path.extname(configPath).toLowerCase();
+
+  if (ext === '.json') {
+    const content = readFileSync(configPath, 'utf-8');
+    return JSON.parse(content) as RawKeycloakMigratorConfig;
+  }
+
+  if (ext === '.js' || ext === '.cjs') {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const mod = require(configPath);
+    return (mod.default ?? mod) as RawKeycloakMigratorConfig;
+  }
+
+  if (ext === '.ts') {
+    ensureTsNode();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
+    const mod = require(configPath);
+    return (mod.default ?? mod) as RawKeycloakMigratorConfig;
+  }
+
+  if (ext === '.mjs') {
+    const mod = await import(pathToFileURL(configPath).href);
+    return (mod.default ?? mod) as RawKeycloakMigratorConfig;
+  }
+
+  throw new Error(`Unsupported config file extension "${ext}" at ${configPath}`);
 }

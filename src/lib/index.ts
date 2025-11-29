@@ -1,1 +1,1 @@
-export type { KeycloakMigration } from './types';
+export type { KeycloakMigration, KeycloakMigratorConfig, BootstrapClientConfig } from './types';

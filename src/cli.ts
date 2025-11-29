@@ -14,7 +14,7 @@ async function main() {
   }
 
   try {
-    const config = loadConfig(args.config as string | undefined);
+    const config = await loadConfig(args.config as string | undefined);
 
     if (command === 'create') {
       const name = (args._[1] as string | undefined) ?? (args.name as string | undefined);
@@ -45,7 +45,7 @@ Usage:
 
 Options:
   --seed            Create or run seed files instead of migrations
-  --config <path>   Path to keycloak-migrator.config.json (defaults to cwd)
+  --config <path>   Path to config file (defaults to keycloak-migrator.config.js)
   --help            Show this message
 `);
 }
