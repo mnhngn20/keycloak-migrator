@@ -1,6 +1,7 @@
 module.exports = {
   migrationDir: "./keycloak/migrations",
   seedDir: "./keycloak/seeds",
+  tsconfigPath: "./tsconfig.json",
   keycloak: {
     baseUrl: process.env.KEYCLOAK_BASE_URL ?? "http://localhost:8080",
     realm: process.env.KEYCLOAK_REALM ?? "example-realm",

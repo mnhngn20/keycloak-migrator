@@ -12,6 +12,7 @@ export type BootstrapClientConfig = ClientRepresentation & { clientId: string };
 export interface RawKeycloakMigratorConfig {
   migrationDir: string;
   seedDir?: string;
+  tsconfigPath?: string;
   keycloak: {
     baseUrl: string;
     realm: string;
@@ -28,6 +29,7 @@ export interface ResolvedKeycloakMigratorConfig {
   filePath: string;
   migrationDir: string;
   seedDir: string;
+  tsconfigPath?: string;
   keycloak: {
     baseUrl: string;
     realm: string;

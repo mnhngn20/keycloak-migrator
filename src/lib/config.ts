@@ -22,11 +22,13 @@ export async function loadConfig(explicitPath?: string): Promise<ResolvedKeycloa
   const configDir = path.dirname(resolvedPath);
   const migrationDir = path.resolve(configDir, rawConfig.migrationDir);
   const seedDir = rawConfig.seedDir ? path.resolve(configDir, rawConfig.seedDir) : path.join(migrationDir, 'seeds');
+  const tsconfigPath = resolveTsconfigPath(configDir, rawConfig.tsconfigPath);
 
   return {
     filePath: resolvedPath,
     migrationDir,
     seedDir,
+    tsconfigPath,
     keycloak: {
       baseUrl: rawConfig.keycloak.baseUrl,
       realm: rawConfig.keycloak.realm,
@@ -130,4 +132,14 @@ async function loadRawConfig(configPath: string): Promise<RawKeycloakMigratorCon
   }
 
   throw new Error(`Unsupported config file extension "${ext}" at ${configPath}`);
+}
+
+function resolveTsconfigPath(configDir: string, provided?: string): string | undefined {
+  if (provided) {
+    const candidate = path.isAbsolute(provided) ? provided : path.resolve(configDir, provided);
+    return existsSync(candidate) ? candidate : undefined;
+  }
+
+  const defaultPath = path.resolve(configDir, 'tsconfig.json');
+  return existsSync(defaultPath) ? defaultPath : undefined;
 }

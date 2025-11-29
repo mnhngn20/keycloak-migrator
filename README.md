@@ -36,6 +36,7 @@ Expose the CLI through your package scripts (this makes `yarn keycloak-migrator 
 const config = {
   migrationDir: "./keycloak/migrations",
   seedDir: "./keycloak/seeds",
+  tsconfigPath: "./tsconfig.json",
   keycloak: {
     baseUrl: process.env.KEYCLOAK_BASE_URL ?? "http://localhost:8080",
     realm: process.env.KEYCLOAK_REALM ?? "example-realm",
@@ -76,6 +77,7 @@ export default config;
 
 - `migrationDir`: path to your migration files. Point it at `src/...` if you author in TypeScript or `dist/...` if you only want compiled JavaScript to run. Paths are resolved relative to the config file.
 - `seedDir`: optional directory for seed files. Defaults to `<migrationDir>/seeds`.
+- `tsconfigPath`: optional path to a `tsconfig.json`. When provided (or when a `tsconfig.json` lives next to the config file), the CLI registers its path aliases via `tsconfig-paths`, so imports like `@/foo/bar` inside migrations resolve correctly.
 - `keycloak`: host + credentials for the admin user. These values are passed to `@keycloak/keycloak-admin-client`.
 - `bootstrap.createRealm`: when true, the realm is created automatically if it does not exist.
 - `bootstrap.client`: optional. When provided, we will create the client (if missing) using the exact JSON you supply. The type matches the payload of `kc.clients.create` (Keycloak `ClientRepresentation`), so any field that API accepts (redirect URIs, flows, service accounts, etc.) is supported.

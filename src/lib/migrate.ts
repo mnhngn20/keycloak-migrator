@@ -3,6 +3,7 @@ import * as path from "path";
 import { pathToFileURL } from "url";
 import KeycloakAdminClient from "@keycloak/keycloak-admin-client";
 import { ensureTsNode } from "./ts-node";
+import { registerTsconfigPaths } from "./tsconfig-paths";
 import { KeycloakMigration, ResolvedKeycloakMigratorConfig } from "./types";
 
 export interface MigrateOptions {
@@ -47,7 +48,7 @@ export async function migrate(
 
   for (const file of migrationFiles) {
     const filePath = path.resolve(targetDir, file);
-    const migration = await loadMigration(filePath);
+      const migration = await loadMigration(filePath, config.tsconfigPath);
 
     if (applied.includes(migration.id)) {
       continue;
@@ -186,14 +187,19 @@ async function saveAppliedMigrations(
   );
 }
 
-async function loadMigration(filePath: string): Promise<KeycloakMigration> {
+async function loadMigration(filePath: string, tsconfigPath?: string): Promise<KeycloakMigration> {
+  let mod: Record<string, unknown>;
   if (filePath.endsWith(".ts")) {
+    registerTsconfigPaths(tsconfigPath);
     ensureTsNode();
+    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
+    mod = require(filePath);
+  } else {
+    const moduleUrl = pathToFileURL(filePath).href;
+    mod = await import(moduleUrl);
   }
 
-  const moduleUrl = pathToFileURL(filePath).href;
-  const mod = await import(moduleUrl);
-  const migration: KeycloakMigration | undefined = mod.default ?? mod.migration;
+  const migration: KeycloakMigration | undefined = (mod.default ?? mod.migration ?? mod) as KeycloakMigration;
 
   if (
     !migration ||
