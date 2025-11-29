@@ -2,10 +2,10 @@
   "migrationDir": "./keycloak/migrations",
   "seedDir": "./keycloak/seeds",
   "keycloak": {
-    "baseUrl": "http://localhost:8080",
+    "baseUrl": "$env.KEYCLOAK_BASE_URL",
     "realm": "example-realm",
-    "adminUsername": "admin",
-    "adminPassword": "admin"
+    "adminUsername": "$env.KEYCLOAK_ADMIN_USER",
+    "adminPassword": "$env.KEYCLOAK_ADMIN_PASSWORD"
   },
   "bootstrap": {
     "createRealm": true,

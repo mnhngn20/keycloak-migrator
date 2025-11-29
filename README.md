@@ -36,10 +36,10 @@ Expose the CLI through your package scripts (this makes `yarn keycloak-migrator 
   "migrationDir": "./keycloak/migrations",
   "seedDir": "./keycloak/seeds",
   "keycloak": {
-    "baseUrl": "http://localhost:8080",
+    "baseUrl": "$env.KEYCLOAK_BASE_URL",
     "realm": "example-realm",
-    "adminUsername": "admin",
-    "adminPassword": "admin"
+    "adminUsername": "$env.KEYCLOAK_ADMIN_USER",
+    "adminPassword": "$env.KEYCLOAK_ADMIN_PASSWORD"
   },
   "bootstrap": {
     "createRealm": true,
@@ -65,6 +65,22 @@ Expose the CLI through your package scripts (this makes `yarn keycloak-migrator 
 - `bootstrap.client`: optional. When provided, we will create the client (if missing) using the exact JSON you supply. Every property (beyond `clientId`) is forwarded to `kc.clients.create`, so you can configure advanced Keycloak features without waiting for this package to expose new flags.
 
 You may keep several config files and pass a different one with `--config path/to/config.json`.
+
+### Environment variables in config
+
+Any string written as `$env.MY_VAR` is replaced with `process.env.MY_VAR` while loading the config. This is handy for secrets or host names:
+
+```json
+{
+  "keycloak": {
+    "baseUrl": "$env.KEYCLOAK_BASE_URL",
+    "adminUsername": "$env.KEYCLOAK_ADMIN_USER",
+    "adminPassword": "$env.KEYCLOAK_ADMIN_PASSWORD"
+  }
+}
+```
+
+If the referenced environment variable is missing the CLI exits with an error, so you never run migrations with blank credentials by accident.
 
 ## CLI commands
 

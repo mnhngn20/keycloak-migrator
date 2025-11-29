@@ -18,7 +18,7 @@ export function loadConfig(explicitPath?: string): ResolvedKeycloakMigratorConfi
   let rawConfig: RawKeycloakMigratorConfig;
 
   try {
-    rawConfig = JSON.parse(fileContent);
+    rawConfig = resolveEnvPlaceholders(JSON.parse(fileContent));
   } catch (err) {
     throw new Error(`Failed to parse config file ${resolvedPath}: ${(err as Error).message}`);
   }
@@ -77,4 +77,34 @@ function validateConfig(config: RawKeycloakMigratorConfig, filePath: string) {
       `"bootstrap.client.clientId" (string) is required in ${filePath} when bootstrap.client is configured`,
     );
   }
+}
+
+const ENV_PLACEHOLDER = /^\$env\.([A-Z0-9_]+)$/i;
+
+function resolveEnvPlaceholders<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => resolveEnvPlaceholders(item)) as T;
+  }
+
+  if (value && typeof value === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
+      result[key] = resolveEnvPlaceholders(val);
+    }
+    return result as T;
+  }
+
+  if (typeof value === 'string') {
+    const match = value.match(ENV_PLACEHOLDER);
+    if (match) {
+      const envVar = match[1];
+      const envValue = process.env[envVar];
+      if (envValue === undefined) {
+        throw new Error(`Environment variable ${envVar} referenced in config is not defined`);
+      }
+      return envValue as T;
+    }
+  }
+
+  return value;
 }
