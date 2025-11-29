@@ -1,0 +1,38 @@
+{
+  "name": "keycloak-migrator",
+  "version": "0.1.0",
+  "description": "CLI tool to author and run Keycloak migrations from any Node.js project.",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
+  "bin": {
+    "keycloak-migrator": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "yarn build"
+  },
+  "keywords": [
+    "keycloak",
+    "migration",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@keycloak/keycloak-admin-client": "^21.1.0",
+    "minimist": "^1.2.8",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^20.11.19",
+    "typescript": "^5.4.2"
+  }
+}

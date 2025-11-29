@@ -1,0 +1,27 @@
+{
+  "migrationDir": "./keycloak/migrations",
+  "seedDir": "./keycloak/seeds",
+  "keycloak": {
+    "baseUrl": "http://localhost:8080",
+    "realm": "example-realm",
+    "adminUsername": "admin",
+    "adminPassword": "admin"
+  },
+  "bootstrap": {
+    "createRealm": true,
+    "client": {
+      "clientId": "example-api",
+      "name": "Example API",
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "rootUrl": "https://example.com",
+      "baseUrl": "/callback"
+    }
+  }
+}
