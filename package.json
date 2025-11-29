@@ -1,6 +1,14 @@
 {
   "name": "keycloak-migrator",
   "version": "0.1.6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mnhngn20/keycloak-migrator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mnhngn20/keycloak-migrator/issues"
+  },
+  "homepage": "https://github.com/mnhngn20/keycloak-migrator#readme",
   "description": "CLI tool to author and run Keycloak migrations from any Node.js project.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 # keycloak-migrator
 
-Lightweight CLI to author and run repeatable Keycloak migrations (and optional seed files) directly from any Node.js project.
+Keycloak instances differ across environments, and manually recreating the same realms, clients, and restricted data (roles, users, etc.) is brittle. `keycloak-migrator` provides a repeatable, code-first workflow to define those changes once and apply them everywhere—local dev boxes, staging, production—using the Keycloak Admin API. Treat your Keycloak configuration like any other migration: check it into Git, run it in CI, and keep every environment in sync without pointing and clicking.
 
 ## Installation
 
