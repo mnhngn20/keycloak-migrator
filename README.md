@@ -44,7 +44,7 @@ const config = {
     adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin",
   },
   bootstrap: {
-    createRealm: true,
+    ensureClient: true,
     client: {
       clientId: "example-api",
       name: "Example API",
@@ -75,12 +75,14 @@ const config: KeycloakMigratorConfig = {
 export default config;
 ```
 
-- `migrationDir`: path to your migration files. Point it at `src/...` if you author in TypeScript or `dist/...` if you only want compiled JavaScript to run. Paths are resolved relative to the config file.
-- `seedDir`: optional directory for seed files. Defaults to `<migrationDir>/seeds`.
-- `tsconfigPath`: optional path to a `tsconfig.json`. When provided (or when a `tsconfig.json` lives next to the config file), the CLI registers its path aliases via `tsconfig-paths`, so imports like `@/foo/bar` inside migrations resolve correctly.
-- `keycloak`: host + credentials for the admin user. These values are passed to `@keycloak/keycloak-admin-client`.
-- `bootstrap.createRealm`: when true, the realm is created automatically if it does not exist.
-- `bootstrap.client`: optional. When provided, we will create the client (if missing) using the exact JSON you supply. The type matches the payload of `kc.clients.create` (Keycloak `ClientRepresentation`), so any field that API accepts (redirect URIs, flows, service accounts, etc.) is supported.
+- `migrationDir` — Where migration files live. Point it at `src/...` when authoring TypeScript files or `dist/...` for compiled JavaScript. Relative paths resolve from the config file location.
+- `seedDir` — Optional directory for seed files. Defaults to `<migrationDir>/seeds`.
+- `tsconfigPath` — Optional path to the `tsconfig.json` that defines your path aliases. If omitted we look for a `tsconfig.json` next to the config file.
+- `keycloak.baseUrl` — Keycloak base URL (e.g. `http://localhost:8080`).
+- `keycloak.realm` — Target realm. The CLI automatically creates it if it does not exist.
+- `keycloak.adminUsername` / `keycloak.adminPassword` — Admin credentials used for the `admin-cli` login.
+- `bootstrap.ensureClient` — Set to `true` to ensure the client supplied in `bootstrap.client` exists (created automatically if missing).
+- `bootstrap.client` — Optional client payload passed straight to `kc.clients.create`. Because we use the official `ClientRepresentation` type, any Keycloak client property (redirect URIs, flows, secrets, etc.) is supported.
 
 You may keep several config files (JS, TS, or JSON) and pass a different one with `--config path/to/config.js`.
 
@@ -117,8 +119,8 @@ export default migration;
 
 ## Bootstrapping behavior
 
-- Realm bootstrap: when `bootstrap.createRealm` is true, the CLI ensures the realm exists before running migrations.
-- Client bootstrap: specifying `bootstrap.client` makes the CLI ensure a client with the same `clientId` exists. All provided fields (redirect URIs, flows, service account options, etc.) are forwarded to `kc.clients.create`, with only `realm`, `clientId`, and sensible defaults (`enabled`, `alwaysDisplayInConsole`) added automatically. This keeps the bootstrap layer flexible for future Keycloak versions.
+- Realm bootstrap: the CLI always verifies the target realm exists before running migrations. Missing realms are created automatically.
+- Client bootstrap: enable `bootstrap.ensureClient` to ensure a client with the same `clientId` as `bootstrap.client` exists. All provided fields (redirect URIs, flows, service account options, etc.) are forwarded to `kc.clients.create`, with only `realm`, `clientId`, and sensible defaults (`enabled`, `alwaysDisplayInConsole`) added automatically. This keeps the bootstrap layer flexible for future Keycloak versions.
 
 ## Tips
 

@@ -35,7 +35,7 @@ export async function migrate(
   const kc = await authenticate(config);
 
   await ensureRealm(kc, config);
-  if (config.bootstrap?.client) {
+  if (config.bootstrap?.ensureClient && config.bootstrap?.client) {
     await ensureClient(kc, config);
   }
 
@@ -96,12 +96,6 @@ async function ensureRealm(
 
   if (realm) {
     return realm;
-  }
-
-  if (!config.bootstrap?.createRealm) {
-    throw new Error(
-      `Realm "${realmName}" does not exist. Enable bootstrap.createRealm in ${config.filePath} to create it automatically.`
-    );
   }
 
   await kc.realms.create({

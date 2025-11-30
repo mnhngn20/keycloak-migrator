@@ -37,7 +37,7 @@ export async function loadConfig(explicitPath?: string): Promise<ResolvedKeycloa
     },
     bootstrap: rawConfig.bootstrap
       ? {
-          createRealm: !!rawConfig.bootstrap.createRealm,
+          ensureClient: !!rawConfig.bootstrap.ensureClient,
           client: rawConfig.bootstrap.client,
         }
       : undefined,
@@ -70,6 +70,10 @@ function validateConfig(config: RawKeycloakMigratorConfig, filePath: string) {
     throw new Error(
       `"bootstrap.client.clientId" (string) is required in ${filePath} when bootstrap.client is configured`,
     );
+  }
+
+  if (config.bootstrap?.ensureClient && !config.bootstrap.client) {
+    throw new Error(`"bootstrap.client" must be provided in ${filePath} when bootstrap.ensureClient is true`);
   }
 }
 

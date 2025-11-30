@@ -9,7 +9,7 @@ module.exports = {
     adminPassword: process.env.KEYCLOAK_ADMIN_PASSWORD ?? "admin",
   },
   bootstrap: {
-    createRealm: true,
+    ensureClient: true,
     client: {
       clientId: "example-api",
       name: "Example API",

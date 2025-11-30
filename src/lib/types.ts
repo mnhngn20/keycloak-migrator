@@ -20,7 +20,7 @@ export interface RawKeycloakMigratorConfig {
     adminPassword: string;
   };
   bootstrap?: {
-    createRealm?: boolean;
+    ensureClient?: boolean;
     client?: BootstrapClientConfig;
   };
 }
@@ -37,7 +37,7 @@ export interface ResolvedKeycloakMigratorConfig {
     adminPassword: string;
   };
   bootstrap?: {
-    createRealm: boolean;
+    ensureClient: boolean;
     client?: BootstrapClientConfig;
   };
 }
