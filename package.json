@@ -1,6 +1,6 @@
 {
   "name": "keycloak-migrator",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mnhngn20/keycloak-migrator.git"
@@ -42,7 +42,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@keycloak/keycloak-admin-client": "^21.1.0",
+    "@s3pweb/keycloak-admin-client-cjs": "^26.4.5",
     "minimist": "^1.2.8",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0"

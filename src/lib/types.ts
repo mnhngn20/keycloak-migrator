@@ -1,5 +1,7 @@
-import type KeycloakAdminClient from '@keycloak/keycloak-admin-client';
-import type ClientRepresentation from '@keycloak/keycloak-admin-client/lib/defs/clientRepresentation';
+import {
+  ClientRepresentation,
+  type KeycloakAdminClient,
+} from "@s3pweb/keycloak-admin-client-cjs";
 
 export interface KeycloakMigration {
   id: string;
