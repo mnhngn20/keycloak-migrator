@@ -24,6 +24,8 @@ async function main() {
 
     if (command === 'migrate') {
       await migrate(config, { seed: Boolean(args.seed) });
+      process.exitCode = 0;
+      setTimeout(() => process.exit(), 100);
       return;
     }
 
